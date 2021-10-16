@@ -1,0 +1,6 @@
+framework module KotlinNativeTrialCore {
+    umbrella header "KotlinNativeTrialCore.h"
+
+    export *
+    module * { export * }
+}
