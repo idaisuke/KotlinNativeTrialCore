@@ -10,6 +10,13 @@ repositories {
 }
 
 kotlin {
+    ios {
+        binaries {
+            framework {
+                baseName = "KotlinNativeTrialCore"
+            }
+        }
+    }
     jvm {
         compilations.all {
             kotlinOptions.jvmTarget = "1.8"
@@ -34,7 +41,7 @@ kotlin {
         else -> throw GradleException("Host OS is not supported in Kotlin/Native.")
     }
 
-    
+
     sourceSets {
         val commonMain by getting
         val commonTest by getting {
@@ -48,5 +55,28 @@ kotlin {
         val jsTest by getting
         val nativeMain by getting
         val nativeTest by getting
+    }
+}
+
+val cleanXCFramework by tasks.registering(Delete::class) {
+    delete("xcframework")
+}
+
+val createXCFramework by tasks.registering(Exec::class) {
+    commandLine(
+        "xcodebuild", "-create-xcframework",
+        "-framework", "build/bin/iosArm64/releaseFramework/KotlinNativeTrialCore.framework",
+        "-framework", "build/bin/iosX64/releaseFramework/KotlinNativeTrialCore.framework",
+        "-output", "xcframework/KotlinNativeTrialCore.xcframework"
+    )
+}
+
+tasks {
+    assemble {
+        finalizedBy(createXCFramework)
+    }
+
+    createXCFramework {
+        dependsOn(cleanXCFramework)
     }
 }
