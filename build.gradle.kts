@@ -5,6 +5,10 @@ plugins {
 group = "me.daisuke"
 version = "1.0-SNAPSHOT"
 
+val hostOs = System.getProperty("os.name")
+val isMingwX64 = hostOs.startsWith("Windows")
+val isMacOS = hostOs == "Mac OS X"
+
 repositories {
     mavenCentral()
 }
@@ -32,10 +36,9 @@ kotlin {
             }
         }
     }
-    val hostOs = System.getProperty("os.name")
-    val isMingwX64 = hostOs.startsWith("Windows")
+
     val nativeTarget = when {
-        hostOs == "Mac OS X" -> macosX64("native")
+        isMacOS -> macosX64("native")
         hostOs == "Linux" -> linuxX64("native")
         isMingwX64 -> mingwX64("native")
         else -> throw GradleException("Host OS is not supported in Kotlin/Native.")
@@ -58,25 +61,23 @@ kotlin {
     }
 }
 
-val cleanXCFramework by tasks.registering(Delete::class) {
-    delete("xcframework")
-}
-
-val createXCFramework by tasks.registering(Exec::class) {
-    commandLine(
-        "xcodebuild", "-create-xcframework",
-        "-framework", "build/bin/iosArm64/releaseFramework/KotlinNativeTrialCore.framework",
-        "-framework", "build/bin/iosX64/releaseFramework/KotlinNativeTrialCore.framework",
-        "-output", "xcframework/KotlinNativeTrialCore.xcframework"
-    )
-}
-
-tasks {
-    assemble {
-        finalizedBy(createXCFramework)
+if (isMacOS) {
+    val cleanXCFramework by tasks.registering(Delete::class) {
+        delete("xcframework")
     }
 
-    createXCFramework {
-        dependsOn(cleanXCFramework)
+    val createXCFramework by tasks.registering(Exec::class) {
+        commandLine(
+            "xcodebuild", "-create-xcframework",
+            "-framework", "build/bin/iosArm64/releaseFramework/KotlinNativeTrialCore.framework",
+            "-framework", "build/bin/iosX64/releaseFramework/KotlinNativeTrialCore.framework",
+            "-output", "xcframework/KotlinNativeTrialCore.xcframework"
+        )
+    }
+
+    tasks {
+        createXCFramework {
+            dependsOn(cleanXCFramework)
+        }
     }
 }
