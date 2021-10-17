@@ -1,5 +1,6 @@
 plugins {
     kotlin("multiplatform") version "1.5.31"
+    `maven-publish`
 }
 
 group = "me.daisuke"
@@ -78,6 +79,26 @@ if (isMacOS) {
     tasks {
         createXCFramework {
             dependsOn(cleanXCFramework)
+        }
+    }
+}
+
+publishing {
+    // :publishGprPublicationToKotlinNativeTrialCoreRepository
+    repositories {
+        maven {
+            name = "KotlinNativeTrialCore"
+            url = uri("https://maven.pkg.github.com/idaisuke/KotlinNativeTrialCore")
+            credentials {
+                username = project.findProperty("gpr.user") as String? ?: System.getenv("GITHUB_USERNAME")
+                password = project.findProperty("gpr.key") as String? ?: System.getenv("GITHUB_TOKEN")
+            }
+        }
+    }
+    publications {
+        register<MavenPublication>("gpr") {
+            artifactId = project.rootProject.name.toLowerCase()
+            artifact("$buildDir/libs/KotlinNativeTrialCore-jvm-$version.jar")
         }
     }
 }
