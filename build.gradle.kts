@@ -84,10 +84,10 @@ if (isMacOS) {
 }
 
 publishing {
-    // :publishGprPublicationToKotlinNativeTrialCoreRepository
+    // :publishGprPublicationToGitHubPackagesRepository
     repositories {
         maven {
-            name = "KotlinNativeTrialCore"
+            name = "GitHubPackages"
             url = uri("https://maven.pkg.github.com/idaisuke/KotlinNativeTrialCore")
             credentials {
                 username = project.findProperty("gpr.user") as String? ?: System.getenv("GITHUB_USERNAME")
